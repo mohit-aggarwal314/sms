@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Modern Bootstrap Admin</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Advanced user management with data tables, CRUD operations, and bulk actions">
+    <meta name="keywords" content="bootstrap, admin, dashboard, users, data tables, CRUD">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ApexCharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- Styles now in SCSS files -->
+
+<body data-page="users" class="user-management">
+    <!-- Admin App Container -->
+    <div class="admin-app">
+        <div class="admin-wrapper" id="admin-wrapper">
+
+            <!-- Header -->
+            <header class="admin-header">
+                <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+                    <div class="container-fluid">
+                        <!-- Logo/Brand -->
+                        <a class="navbar-brand d-flex align-items-center" href="./index.html">
+                            <img src="/assets/images/logo.svg" alt="Logo" height="32"
+                                class="d-inline-block align-text-top me-2">
+                            <h1 class="h4 mb-0 fw-bold text-primary">Metis</h1>
+                        </a>
+
+                        <!-- Search Bar with Alpine.js -->
+                        <div class="search-container flex-grow-1 mx-4" x-data="searchComponent">
+                            <div class="position-relative">
+                                <input type="search" class="form-control" placeholder="Search... (Ctrl+K)"
+                                    x-model="query" @input="search()" data-search-input aria-label="Search">
+                                <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
+
+                                <!-- Search Results Dropdown -->
+                                <div x-show="results.length > 0" x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    class="position-absolute top-100 start-0 w-100 bg-white border rounded-2 shadow-lg mt-1 z-3">
+                                    <template x-for="result in results" :key="result.title">
+                                        <a :href="result.url"
+                                            class="d-block px-3 py-2 text-decoration-none text-dark border-bottom">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-file-text me-2 text-muted"></i>
+                                                <span x-text="result.title"></span>
+                                                <small class="ms-auto text-muted" x-text="result.type"></small>
+                                            </div>
+                                        </a>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Side Icons -->
+                        <div class="navbar-nav flex-row">
+                            <!-- Theme Toggle with Alpine.js -->
+                            <div x-data="themeSwitch">
+                                <button class="btn btn-outline-secondary me-2" type="button" @click="toggle()"
+                                    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Toggle theme">
+                                    <i class="bi bi-sun-fill" x-show="currentTheme === 'light'"></i>
+                                    <i class="bi bi-moon-fill" x-show="currentTheme === 'dark'"></i>
+                                </button>
+                            </div>
+
+                            <!-- Fullscreen Toggle -->
+                            <button class="btn btn-outline-secondary me-2" type="button" data-fullscreen-toggle
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Toggle fullscreen">
+                                <i class="bi bi-arrows-fullscreen icon-hover"></i>
+                            </button>
+
+                            <!-- Notifications -->
+                            <div class="dropdown me-2">
+                                <button class="btn btn-outline-secondary position-relative" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-bell"></i>
+                                    <span
+                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        3
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <h6 class="dropdown-header">Notifications</h6>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#">New user registered</a></li>
+                                    <li><a class="dropdown-item" href="#">Server status update</a></li>
+                                    <li><a class="dropdown-item" href="#">New message received</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item text-center" href="#">View all notifications</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- User Menu -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary d-flex align-items-center" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="/assets/images/avatar-placeholder.svg" alt="User Avatar" width="24"
+                                        height="24" class="rounded-circle me-2">
+                                    <span class="d-none d-md-inline">John Doe</span>
+                                    <i class="bi bi-chevron-down ms-1"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i
+                                                class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            <!-- Sidebar -->
+            <aside class="admin-sidebar" id="admin-sidebar">
+                <div class="sidebar-content">
+                    <nav class="sidebar-nav">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="./dashboard.html">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="./compose.html">
+                                    <i class="bi bi-graph-up"></i>
+                                    <span>Compose SMS</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="./users.html">
+                                    <i class="bi bi-people"></i>
+                                    <span>Users</span>
+                                </a>
+                            </li>
+
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#elementsSubmenu"
+                                    aria-expanded="false">
+                                    <i class="bi bi-puzzle"></i>
+                                    <span>Reports</span>
+
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </a>
+                                <div class="collapse" id="elementsSubmenu">
+                                    <ul class="nav nav-submenu">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="./reports.html">
+                                                <i class="bi bi-grid"></i>
+                                                <span>Campaign Report</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="./reports_contact.html">
+                                                <i class="bi bi-square"></i>
+                                                <span>Contact Report</span>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- Floating Hamburger Menu -->
+            <button class="hamburger-menu" type="button" data-sidebar-toggle aria-label="Toggle sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <!-- Main Content -->
+            <main class="admin-main">
+                <div class="container-fluid p-4 p-lg-5">
+
+                    <!-- Page Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 mb-lg-5 mb-xl-6">
+                        <div>
+                            <h1 class="h3 mb-0">User Management</h1>
+                            <p class="text-muted mb-0">Manage users, roles, and permissions</p>
+                        </div>
+
+                    </div>
+
+                    <!-- Users Management Container -->
+                    <div x-data="userTable" x-init="init()">
+
+                        <!-- User Stats Widgets -->
+                        <div class="row g-4 g-lg-5 g-xl-6 mb-5 mb-lg-5 mb-xl-6">
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="card stats-card">
+                                    <div class="card-body p-3 p-lg-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stats-icon bg-primary bg-opacity-10 text-primary me-3">
+                                                <i class="bi bi-people-fill"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-muted">Total Users</h6>
+                                                <h3 class="mb-0" id="totalUsers"></h3>
+                                                <small class="text-success">
+                                                    <i class="bi bi-arrow-up"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="card stats-card">
+                                    <div class="card-body p-3 p-lg-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stats-icon bg-success bg-opacity-10 text-success me-3">
+                                                <i class="bi bi-person-check-fill"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-muted">Active Users</h6>
+                                                <h3 class="mb-0" id="activeUsers"></h3>
+                                                <small class="text-success">
+                                                    <i class="bi bi-arrow-up"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="card stats-card">
+                                    <div class="card-body p-3 p-lg-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stats-icon bg-info bg-opacity-10 text-info me-3">
+                                                <i class="bi bi-person-plus-fill"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-muted">New This Month</h6>
+                                                <h3 class="mb-0" id="newUsers"></h3>
+                                                <small class="text-success">
+                                                    <i class="bi bi-arrow-up"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-6">
+                                <div class="card stats-card">
+                                    <div class="card-body p-3 p-lg-4">
+                                        <div class="d-flex align-items-center">
+                                            <div id="activeUserChart" style="min-height: 40px; width: 50px;"></div>
+                                            <div class="ms-3">
+                                                <h6 class="mb-0 text-muted">Active Rate</h6>
+                                                <h3 class="mb-0" id="activeRate"></h3>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-clock"></i>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">User Management</h5>
+                                <button id="addUserBtn" class="btn btn-success mb-2">Add User</button>
+                                <table class="table table-bordered" id="usersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Credits</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <script>
+                            async function fetchUsers() {
+                                const res = await fetch('/api/users');
+                                const data = await res.json();
+                                const tbody = document.querySelector('#usersTable tbody');
+                                tbody.innerHTML = '';
+                                if (data.success) {
+                                    data.users.forEach(user => {
+                                        tbody.innerHTML += `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.credits}</td>
+                    <td>${user.status}</td>
+                    <td>
+                        <button onclick="editUser(${user.id})" class="btn btn-sm btn-primary">Edit</button>
+                        <button onclick="deleteUser(${user.id})" class="btn btn-sm btn-danger">Delete</button>
+                        <button onclick="assignCredit(${user.id})" class="btn btn-sm btn-warning">Add Credit</button>
+                        <button onclick="toggleStatus(${user.id}, '${user.status}')" class="btn btn-sm btn-info">${user.status === 'active' ? 'Deactivate' : 'Activate'}</button>
+                    </td>
+                </tr>
+            `;
+                                    });
+                                } else {
+                                    alert(data.error || "Failed to fetch users");
+                                }
+                            }
+
+                            // Add new user
+                            document.getElementById('addUserBtn').addEventListener('click', async () => {
+                                const name = prompt("Enter user name:");
+                                const email = prompt("Enter user email:");
+                                const password = prompt("Enter user password:");
+                                if (!name || !email || !password) return;
+
+                                const res = await fetch('/api/users', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ name, email, password })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert('User added successfully!');
+                                    fetchUsers();
+                                } else alert(data.error);
+                            });
+
+                            // Edit user
+                            async function editUser(id) {
+                                const name = prompt("Enter new name:");
+                                const email = prompt("Enter new email:");
+                                const credits = prompt("Enter credits:");
+                                const status = prompt("Enter status (active/inactive):");
+                                if (!name || !email || credits === null || !status) return;
+
+                                const res = await fetch(`/api/users/${id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ name, email, credits, status })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert('User updated successfully!');
+                                    fetchUsers();
+                                } else alert(data.error);
+                            }
+
+                            // Delete user
+                            async function deleteUser(id) {
+                                if (!confirm("Are you sure you want to delete this user?")) return;
+                                const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert('User deleted!');
+                                    fetchUsers();
+                                } else alert(data.error);
+                            }
+
+                            // Assign credits
+                            async function assignCredit(id) {
+                                const credits = prompt("Enter number of credits to add:");
+                                if (!credits) return;
+
+                                const res = await fetch(`/api/users/${id}/assign-credits`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ credits })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert('Credits added!');
+                                    fetchUsers();
+                                } else alert(data.error);
+                            }
+
+                            // Toggle status
+                            async function toggleStatus(id, currentStatus) {
+                                const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                                const res = await fetch(`/api/users/${id}/status`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ status: newStatus })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert('Status updated!');
+                                    fetchUsers();
+                                } else alert(data.error);
+                            }
+
+                            fetchUsers();
+
+                        </script>
+
+
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="text-muted">
+                                Showing <span x-text="(currentPage - 1) * itemsPerPage + 1"></span> to
+                                <span x-text="Math.min(currentPage * itemsPerPage, filteredUsers.length)"></span> of
+                                <span x-text="filteredUsers.length"></span> results
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" :class="{ 'disabled': currentPage === 1 }">
+                                        <a class="page-link" href="#"
+                                            @click.prevent="goToPage(currentPage - 1)">Previous</a>
+                                    </li>
+                                    <template x-for="page in visiblePages" :key="page">
+                                        <li class="page-item" :class="{ 'active': page === currentPage }">
+                                            <a class="page-link" href="#" @click.prevent="goToPage(page)"
+                                                x-text="page"></a>
+                                        </li>
+                                    </template>
+                                    <li class="page-item" :class="{ 'disabled': currentPage === totalPages }">
+                                        <a class="page-link" href="#"
+                                            @click.prevent="goToPage(currentPage + 1)">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+        </div> <!-- End Users Management Container -->
+
+    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="admin-footer">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">© 2025 Modern Bootstrap Admin Template</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">Built with Bootstrap 5.3.7</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    </div> <!-- /.admin-wrapper -->
+    </div>
+
+    <!-- User Modal (Add/Edit) -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form x-data="userForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" x-model="form.firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" x-model="form.lastName" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" x-model="form.email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" x-model="form.role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                    <option value="moderator">Moderator</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" x-model="form.status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" x-model="form.phone">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" @click="saveUser()">Save User</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Users</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Upload CSV File</label>
+                        <input type="file" class="form-control" accept=".csv">
+                        <div class="form-text">Upload a CSV file with columns: name, email, role, status</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>CSV Format:</strong> name, email, role, status<br>
+                        <small>Example: John Doe, john@example.com, user, active</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Import Users</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page-specific Component -->
+    <script type="module" src="./scripts/components/users.js"></script>
+
+    <!-- Main App Script -->
+    <script type="module" src="./scripts/main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.querySelector('[data-sidebar-toggle]');
+            const wrapper = document.getElementById('admin-wrapper');
+
+            if (toggleButton && wrapper) {
+                // Set initial state from localStorage
+                const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+                if (isCollapsed) {
+                    wrapper.classList.add('sidebar-collapsed');
+                    toggleButton.classList.add('is-active');
+                }
+
+                // Attach click listener
+                toggleButton.addEventListener('click', () => {
+                    const isCurrentlyCollapsed = wrapper.classList.contains('sidebar-collapsed');
+
+                    if (isCurrentlyCollapsed) {
+                        wrapper.classList.remove('sidebar-collapsed');
+                        toggleButton.classList.remove('is-active');
+                        localStorage.setItem('sidebar-collapsed', 'false');
+                    } else {
+                        wrapper.classList.add('sidebar-collapsed');
+                        toggleButton.classList.add('is-active');
+                        localStorage.setItem('sidebar-collapsed', 'true');
+                    }
+                });
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/api/user-stats")
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return console.error(data.error);
+
+                    const stats = data.stats;
+                    document.getElementById("totalUsers").innerText = stats.total;
+                    document.getElementById("activeUsers").innerText = stats.active;
+                    document.getElementById("newUsers").innerText = stats.newThisMonth;
+                    document.getElementById("activeRate").innerText = Math.round(stats.activePercentage) + "%";
+                })
+                .catch(err => console.error("Error fetching stats:", err));
+        });
+    </script>
+</body>
+
+</html>
