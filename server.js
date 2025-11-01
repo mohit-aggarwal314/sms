@@ -6,6 +6,8 @@ import bodyParser from 'body-parser';
 import path from 'path';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +23,7 @@ app.use('/assets', express.static(path.join(__dirname, 'src-modern/assets')));
 
 // Session setup
 app.use(session({
-    secret: 'your-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false }
@@ -29,10 +31,10 @@ app.use(session({
 
 // MySQL connection
 const db = await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'sms_panel'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 console.log("Connected to MySQL database!");
 
@@ -539,4 +541,6 @@ app.get("/api/campaign-contacts/download", authMiddleware, async (req, res) => {
 });
 
 
-app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+app.listen(process.env.PORT || 5000, () =>
+  console.log(`Server running on port ${process.env.PORT || 5000}`)
+);
